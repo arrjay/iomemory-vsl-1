@@ -184,8 +184,6 @@ fusion_page_t noinline kfio_alloc_0_page(kfio_maa_t flags)
     return page;
 }
 
-#define GET_USER_PAGES_FLAGS(write, force) (write? FOLL_WRITE : 0 | force? FOLL_FORCE : 0)
-
 #if PORT_SUPPORTS_USER_PAGES
 /// @brief Pin the user pages in memory.
 /// Note:  This needs to be called from within a process
@@ -200,9 +198,7 @@ int kfio_get_user_pages(fusion_user_page_t *pages, int nr_pages, fio_uintptr_t s
 {
     int retval;
 
-    down_read(&current->mm->mmap_sem);
-    retval =  get_user_pages(start, nr_pages, GET_USER_PAGES_FLAGS(write, 0), (struct page **) pages, NULL);
-    up_read(&current->mm->mmap_sem);
+    retval = get_user_pages_fast(start, nr_pages, write, (struct page **) pages);
     return retval;
 }
 
